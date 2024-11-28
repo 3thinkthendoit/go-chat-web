@@ -1,0 +1,84 @@
+.ql-mention-list-container {
+  width: 160px;
+  max-height: 200px;
+  border-radius: 10px;
+  background-color: #ffffff;
+  z-index: 9001;
+  overflow: auto;
+  padding: 3px 3px 3px 3px;
+  border: 1px solid #e0e0e0;
+}
+
+.ql-mention-loading {
+  line-height: 44px;
+  padding: 0 20px;
+  vertical-align: middle;
+  font-size: 16px;
+}
+
+.ql-mention-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ql-mention-list-item {
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0 10px;
+  overflow: hidden;
+  height: 28px;
+
+  &.disabled {
+    cursor: auto;
+  }
+
+  &.selected {
+    background-color: var(--im-primary-color);
+    color: #ffffff;
+    border-radius: 2px;
+  }
+}
+
+.mention {
+  height: 24px;
+  width: 65px;
+  border-radius: 6px;
+  padding: 3px 0;
+  margin-right: 2px;
+  user-select: all;
+  color: var(--im-primary-color);
+  background-color: transparent;
+
+  > span {
+    margin: 0 3px;
+  }
+}
+
+.ed-member-item {
+  height: 28px;
+  display: flex;
+  align-items: center;
+
+  > img {
+    height: 18px;
+    width: 18px;
+    border-radius: 50%;
+  }
+
+  .nickname {
+    margin-left: 10px;
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+html[theme-mode='dark'] {
+  .ql-mention-list-container {
+    background-color: rgb(44 44 49);
+    color: #ffffff;
+    border: unset;
+  }
+}

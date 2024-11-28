@@ -1,0 +1,47 @@
+.dropsize-col-resize {
+  cursor: col-resize !important;
+}
+
+.dropsize-row-resize {
+  cursor: row-resize !important;
+}
+
+.dropsize-line {
+  position: absolute;
+  cursor: col-resize;
+
+  &:hover,
+  &.dropsize-resizing {
+    background-color: #1890ff;
+  }
+
+  &.dropsize-line-top {
+    top: 0;
+    left: 0;
+    height: 2px;
+    width: 100%;
+    cursor: row-resize;
+  }
+
+  &.dropsize-line-bottom {
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    width: 100%;
+    cursor: row-resize;
+  }
+
+  &.dropsize-line-left {
+    left: 0;
+    top: 0;
+    width: 2px;
+    height: 100%;
+  }
+
+  &.dropsize-line-right {
+    right: 0;
+    top: 0;
+    width: 2px;
+    height: 100%;
+  }
+}
