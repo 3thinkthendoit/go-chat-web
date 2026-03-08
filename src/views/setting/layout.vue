@@ -52,6 +52,9 @@ const { isMobile } = useMobile()
 .setting-mobile-container {
   height: 100%;
   overflow: hidden;
+  padding-top: 50px; // 为顶部的MobilePageHeader预留空间
+  box-sizing: border-box;
+  background-color: #f5f5f5;
 }
 
 .setting-mobile-container :deep(.section) {
@@ -70,44 +73,61 @@ const { isMobile } = useMobile()
 .setting-mobile-container :deep(.section .el-aside) {
   width: 100% !important;
   border-right: none;
-  padding: 10px;
+  padding: 0;
   overflow-y: auto;
 }
 
 .setting-mobile-container :deep(.section .el-aside .menu) {
-  height: 50px;
-  margin: 5px 0;
+  height: 56px;
+  margin: 0;
   background-color: #fff;
-  border-radius: 8px;
+  border-radius: 0;
   padding: 0 15px;
+  border-bottom: 1px solid #e5e5e5;
+  display: flex;
+  align-items: center;
 }
 
 .setting-mobile-container :deep(.section .el-aside .menu .icon) {
-  width: 30px;
-  height: 30px;
-  border-radius: 6px;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
   background-color: #07c160;
   color: #fff;
+  font-size: 14px;
 }
 
 .setting-mobile-container :deep(.section .el-aside .menu .name) {
-  font-size: 15px;
+  font-size: 16px;
   color: #333;
-  padding-left: 10px;
+  padding-left: 12px;
+}
+
+.setting-mobile-container :deep(.section .el-aside .menu .tips .badge) {
+  margin-left: auto;
 }
 
 .setting-mobile-container :deep(.section .el-aside .menu:hover),
 .setting-mobile-container :deep(.section .el-aside .menu.selectd) {
-  background-color: #e8f5e9;
+  background-color: #f5f5f5;
 }
 
 .setting-mobile-container :deep(.section .el-main) {
-  display: none;
+  display: block;
+  height: 100%;
+  overflow-y: auto;
+  background-color: #f5f5f5;
+  padding: 0;
 }
 
 html[theme-mode='dark'] {
+  .setting-mobile-container {
+    background-color: #1a1a1a;
+  }
+
   .setting-mobile-container :deep(.section .el-aside .menu) {
     background-color: #2a2a2a;
+    border-bottom-color: #3a3a3a;
   }
 
   .setting-mobile-container :deep(.section .el-aside .menu .name) {
@@ -116,7 +136,7 @@ html[theme-mode='dark'] {
 
   .setting-mobile-container :deep(.section .el-aside .menu:hover),
   .setting-mobile-container :deep(.section .el-aside .menu.selectd) {
-    background-color: #1a5f2e;
+    background-color: #3a3a3a;
   }
 }
 </style>

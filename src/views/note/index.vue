@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import NoteMenu from './inner/NoteMenu.vue'
 import NoteList from './inner/NoteList.vue'
 import NoteView from './inner/NoteView.vue'
@@ -11,6 +11,13 @@ import { useMobile } from '@/hooks/useMobile'
 const noteStore = useNoteStore()
 const { isMobile } = useMobile()
 const currentLoadId = computed(() => noteStore.view.loadId)
+
+// 移动端加载笔记列表数据
+onMounted(() => {
+  if (isMobile) {
+    noteStore.loadNoteList({ find_type: 1 })
+  }
+})
 </script>
 
 <template>
@@ -56,6 +63,8 @@ const currentLoadId = computed(() => noteStore.view.loadId)
 .note-mobile-container {
   height: 100%;
   overflow: hidden;
+  padding-top: 50px; // 为顶部的MobilePageHeader预留空间
+  box-sizing: border-box;
 
   .el-container {
     height: 100%;

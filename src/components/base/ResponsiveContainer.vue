@@ -82,6 +82,16 @@ export default {
 .mobile-page-main {
   flex: 1;
   overflow-y: auto;
-  padding: 0;
+  padding: 10px;
+  padding-top: 60px; // 为顶部的MobilePageHeader预留空间
+}
+</style>
+
+<!-- 移动端全局样式：确保页面内容不被固定头部遮挡 -->
+<style lang="less">
+html[view-mode='mobile'] {
+  main.mobile-page-main {
+    padding-top: 60px !important;
+  }
 }
 </style>

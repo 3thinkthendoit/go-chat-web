@@ -63,6 +63,8 @@ const menus = reactive([
 .contact-mobile-container {
   height: 100%;
   overflow: hidden;
+  padding-top: 50px; // 为顶部的MobilePageHeader预留空间
+  box-sizing: border-box;
 }
 
 .contact-mobile-container :deep(.section) {
@@ -120,7 +122,10 @@ const menus = reactive([
 }
 
 .contact-mobile-container :deep(.section .el-main) {
-  display: none;
+  display: block;
+  height: calc(100% - 50px - 10px);
+  overflow: hidden;
+  margin-top: 10px;
 }
 
 html[theme-mode='dark'] {

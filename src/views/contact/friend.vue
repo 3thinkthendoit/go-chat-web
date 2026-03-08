@@ -215,6 +215,28 @@ useEventBus([{ name: ContactConst.UpdateRemark, event: onChangeRemark }])
               <n-icon :component="Search" />
             </template>
           </n-input>
+          <n-dropdown
+            :animated="true"
+            trigger="hover"
+            :show-arrow="true"
+            @select="onToolsMenu"
+            :options="[
+              {
+                label: '添加好友',
+                key: 'add'
+              },
+              {
+                label: '分组管理',
+                key: 'group'
+              }
+            ]"
+          >
+            <n-button circle size="small">
+              <template #icon>
+                <n-icon :component="Plus" />
+              </template>
+            </n-button>
+          </n-dropdown>
         </div>
 
         <!-- 分组标签 -->
@@ -366,6 +388,13 @@ useEventBus([{ name: ContactConst.UpdateRemark, event: onChangeRemark }])
 
 .mobile-search-box {
   margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .n-input {
+    flex: 1;
+  }
 }
 
 .mobile-tabs {
