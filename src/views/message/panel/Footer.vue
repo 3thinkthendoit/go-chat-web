@@ -48,6 +48,10 @@ const props = defineProps({
   },
   members: {
     default: () => []
+  },
+  isMobile: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -238,7 +242,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <footer class="el-footer height100">
+  <footer class="el-footer">
     <MultiSelectFooter v-if="dialogueStore.isOpenMultiSelect" />
     <Editor
       v-else
@@ -246,6 +250,7 @@ onMounted(() => {
       :index-name="indexName"
       :show-vote="talkMode == 2"
       :group-members="members"
+      :is-mobile="isMobile"
     />
   </footer>
 
@@ -257,4 +262,22 @@ onMounted(() => {
   />
 </template>
 
-<style lang="less" scoped></style>
+<style lang="less" scoped>
+.el-footer {
+  height: auto !important;
+  min-height: 52px !important;
+
+  @media screen and (max-width: 768px) {
+    // 移动端自适应
+    min-height: 52px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+
+  @media screen and (min-width: 769px) {
+    // PC端固定高度
+    height: 160px !important;
+  }
+}
+</style>

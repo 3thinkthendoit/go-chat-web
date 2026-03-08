@@ -2,6 +2,7 @@
 import { NImage } from 'naive-ui'
 import { getImageInfo } from '@/utils/file'
 import { ITalkRecordExtraImage, ITalkRecord } from '@/types/chat'
+import { computed } from 'vue'
 
 defineProps<{
   extra: ITalkRecordExtraImage
@@ -29,12 +30,17 @@ const img = (src: string, width = 200) => {
     height: `${info.height / (info.width / width)}px`
   }
 }
+
+// 判断是否为移动端
+const isMobile = computed(() => {
+  return window.innerWidth <= 768
+})
 </script>
 <template>
   <section
     class="immsg-image"
     :class="{ right: data.float === 'right' }"
-    :style="img(extra.url, 350)"
+    :style="img(extra.url, isMobile ? 120 : 350)"
   >
     <n-image :src="extra.url" />
   </section>
@@ -42,15 +48,11 @@ const img = (src: string, width = 200) => {
 <style lang="less" scoped>
 .immsg-image {
   overflow: hidden;
-  padding: 5px;
+  padding: 0;
   border-radius: 5px;
-  background: var(--im-message-left-bg-color);
+  background: transparent;
   min-width: 30px;
   min-height: 30px;
-
-  &.right {
-    background: var(--im-message-right-bg-color);
-  }
 
   :deep(.n-image img) {
     width: 100%;

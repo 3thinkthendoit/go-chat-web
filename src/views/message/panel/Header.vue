@@ -7,10 +7,11 @@ import {
   Announcement,
   PhoneVideoCall,
   VideoOne,
-  More
+  More,
+  Left
 } from '@icon-park/vue-next'
 
-const emit = defineEmits(['evnet', 'changeSessionMenu'])
+const emit = defineEmits(['evnet', 'changeSessionMenu', 'back'])
 
 const props = defineProps({
   talkMode: {
@@ -36,6 +37,10 @@ const props = defineProps({
   showSessionMenu: {
     type: Boolean,
     default: false
+  },
+  isMobile: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -46,7 +51,13 @@ const onSetMenu = () => {
 
 <template>
   <header class="el-header panel-header">
-    <div class="menu border-right pointer" @click="onSetMenu">
+    <!-- 移动端返回按钮 -->
+    <div v-if="isMobile" class="mobile-back border-right pointer" @click="emit('back')">
+      <n-icon :component="Left" :size="22" />
+    </div>
+
+    <!-- PC端菜单按钮 -->
+    <div v-else class="menu border-right pointer" @click="onSetMenu">
       <n-icon :component="showSessionMenu ? MenuUnfoldOne : MenuFoldOne" :size="22" />
     </div>
 
@@ -130,22 +141,26 @@ const onSetMenu = () => {
 
 <style lang="less" scoped>
 .panel-header {
-  height: 60px;
-  padding: 0 15px;
+  height: 50px;
+  padding: 0 10px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   box-sizing: border-box;
   -webkit-app-region: drag;
   position: relative;
+  background-color: #f5f5f5;
+  border-bottom: 1px solid #e5e5e5;
 
-  .menu {
-    width: 50px;
+  .menu, .mobile-back {
+    width: 40px;
+    height: 50px;
     position: absolute;
     display: flex;
     align-items: center;
     left: 0;
     justify-content: center;
+    color: #000;
   }
 
   .module {
@@ -178,6 +193,85 @@ const onSetMenu = () => {
     .icon {
       cursor: pointer;
       margin: 0 8px;
+    }
+  }
+
+  // 移动端样式适配
+  @media screen and (max-width: 768px) {
+    padding: 0 10px;
+    background-color: #f5f5f5;
+    height: 50px;
+    overflow-x: hidden; // 禁止横向滚动
+    touch-action: none; // 禁止所有触摸手势
+    overscroll-behavior: none; // 禁止过度滚动
+
+    .menu, .mobile-back {
+      width: 40px;
+      height: 50px;
+      position: absolute;
+      display: flex;
+      align-items: center;
+      left: 0;
+      justify-content: center;
+      color: #000;
+      z-index: 10;
+    }
+
+    .left-module {
+      margin-left: 40px;
+      flex: 1;
+      min-width: 0;
+      justify-content: center;
+      padding-right: 40px;
+
+      .nickname {
+        font-size: 17px;
+        font-weight: 500;
+        color: #000;
+        text-align: center;
+      }
+
+      .tag, .online, .keyboard, .num {
+        display: none;
+      }
+    }
+
+    .right-module {
+      position: absolute;
+      right: 0;
+      top: 0;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      padding-right: 10px;
+      z-index: 10;
+
+      .icon {
+        margin: 0 6px;
+        color: #000;
+      }
+    }
+  }
+}
+
+// PC端也使用微信风格的头部
+@media screen and (min-width: 769px) {
+  .panel-header {
+    background-color: #f5f5f5;
+    border-bottom: 1px solid #e5e5e5;
+
+    .left-module {
+      .nickname {
+        font-size: 16px;
+        font-weight: 500;
+        color: #000;
+      }
+    }
+
+    .right-module {
+      .icon {
+        color: #000;
+      }
     }
   }
 }
@@ -240,19 +334,7 @@ const onSetMenu = () => {
 }
 
 .tag {
-  background: rgb(81 139 254);
-  height: 18px;
-  line-height: 18px;
-  padding: 1px 3px;
-  font-size: 10px;
-  color: white;
-  border-radius: 3px;
-  margin-right: 8px;
-  flex-shrink: 0;
-
-  &.red {
-    background: #f97348;
-  }
+  display: none; // 微信风格不显示标签
 }
 
 .online-status {

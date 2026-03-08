@@ -22,15 +22,21 @@ defineProps({
 </script>
 
 <template>
-  <n-avatar v-if="src.length" round :src="src" :size="size" :fallback-src="defAvatar" />
+  <n-avatar
+    v-if="src.length"
+    :src="src"
+    :size="size"
+    :fallback-src="defAvatar"
+    :style="{ borderRadius: '6px' }"
+  />
 
   <n-avatar
     v-else
-    round
     :style="{
       color: '#ffffff',
       backgroundColor: '#1890ff',
-      fontSize: fontSize + 'px'
+      fontSize: fontSize + 'px',
+      borderRadius: '6px'
     }"
     :size="size"
   >

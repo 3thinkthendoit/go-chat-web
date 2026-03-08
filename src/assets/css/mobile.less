@@ -1,0 +1,380 @@
+// 移动端全局响应式样式
+// 断点定义: 手机 <= 768px, 平板 > 768px 且 <= 1024px, 桌面 > 1024px
+
+// 微信风格基础样式
+.wechat-style {
+  background-color: #f5f5f5;
+}
+
+// 移动端容器样式
+@media screen and (max-width: 768px) {
+  // 禁用页面拖拽(移动端不需要)
+  .el-header,
+  .panel-header {
+    -webkit-app-region: no-drag;
+  }
+
+  // 覆盖全局最小宽度
+  html,
+  body {
+    min-width: 100vw !important;
+    max-width: 100vw !important;
+    width: 100vw !important;
+    overflow-x: hidden !important;
+  }
+
+  // 禁止横向滚动,确保页面自适应
+  #app,
+  .im-container,
+  .el-container,
+  .el-main,
+  .el-aside {
+    overflow-x: hidden !important;
+    overflow-y: auto;
+    max-width: 100% !important;
+    min-width: 100% !important;
+    width: 100% !important;
+  }
+
+  // 移动端主容器为顶部header和底部TabBar留出空间
+  .im-container {
+    padding: 0 !important;
+    height: 100%;
+    overflow: hidden;
+
+    > .el-main {
+      padding: 0 !important;
+      height: 100%;
+      overflow: hidden;
+    }
+  }
+
+  // 确保所有容器都是100%宽度
+  * {
+    max-width: 100% !important;
+    box-sizing: border-box;
+  }
+
+  // 特殊处理可能导致溢出的元素
+  .talk-item-content,
+  .message-content,
+  .ql-editor,
+  .n-modal,
+  .n-drawer {
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  // 优化触摸区域
+  .pointer,
+  button,
+  .n-icon {
+    cursor: none; // 移动端不需要鼠标样式
+    min-height: 44px; // 最小触摸区域
+    min-width: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  // 隐藏滚动条但保留滚动功能
+  ::-webkit-scrollbar {
+    width: 0px;
+    height: 0px;
+    display: none;
+  }
+
+  // 消息气泡样式优化
+  .talk-item {
+    padding: 12px 10px;
+  }
+
+  // 编辑器工具栏优化（微信风格横向布局）
+  .editor-toolbar,
+  .editor .toolbar {
+    flex-wrap: wrap;
+    padding: 8px 10px;
+    background-color: #f7f7f7;
+    border-bottom: 1px solid #e5e5e5;
+  }
+
+  // 移动端横向编辑器容器
+  .editor-mobile {
+    .mobile-editor-container {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      padding: 8px;
+      background-color: #f7f7f7;
+      border-top: 1px solid #e5e5e5;
+    }
+
+    .mobile-toolbar-btn {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      cursor: pointer;
+      color: #333;
+      background-color: transparent;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+
+      &:active {
+        opacity: 0.6;
+        transform: scale(0.95);
+      }
+
+      .n-icon {
+        color: #333;
+      }
+    }
+
+    .mobile-send-btn {
+      width: 70px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      user-select: none;
+      flex-shrink: 0;
+
+      &:not(.has-content) {
+        background-color: #e5e5e5;
+        color: #999;
+        font-size: 20px;
+        font-weight: bold;
+      }
+
+      &.has-content {
+        background-color: #07c160;
+        color: #ffffff;
+      }
+
+      &:active {
+        opacity: 0.8;
+        transform: scale(0.95);
+      }
+    }
+  }
+
+  // 抽屉和弹窗优化
+  .n-drawer-container {
+    .n-drawer-body-content-wrapper {
+      padding: 0;
+    }
+  }
+
+  // 虚拟列表优化
+  .n-virtual-list {
+    padding: 0;
+  }
+
+  // 消息内容样式
+  .message-content {
+    font-size: 14px;
+    max-width: 85%;
+  }
+
+  // 图片消息
+  .image-message img {
+    max-width: 200px;
+    max-height: 200px;
+  }
+
+  // 视频消息
+  .video-message video {
+    max-width: 260px;
+    max-height: 200px;
+  }
+
+  // 文件消息
+  .file-message {
+    max-width: 280px;
+  }
+
+  // 群成员列表
+  .group-members-list {
+    .member-item {
+      padding: 12px 15px;
+    }
+  }
+
+  // 输入框优化（微信风格横向布局）
+  .ql-editor {
+    font-size: 16px; // 防止iOS缩放
+    padding: 12px 14px;
+    min-height: 50px;
+    max-height: 150px;
+    background-color: #ffffff;
+    border-radius: 6px;
+    line-height: 1.5;
+    margin: 0;
+    overflow-y: auto;
+
+    // 移动端滚动条隐藏
+    &::-webkit-scrollbar {
+      width: 0;
+      display: none;
+    }
+
+    // 占位符
+    &.ql-blank::before {
+      color: #b0b0b0;
+      font-style: normal;
+      font-size: 16px;
+    }
+  }
+
+  // 编辑器容器
+  .ql-container.ql-snow {
+    border: none;
+  }
+
+  // 按钮样式
+  .n-button {
+    min-height: 40px;
+  }
+
+  // 输入框
+  .n-input {
+    font-size: 16px;
+  }
+
+  // 选择框
+  .n-select {
+    font-size: 16px;
+  }
+
+  // 弹窗标题
+  .n-modal-header {
+    padding: 16px 20px;
+  }
+
+  // 弹窗内容
+  .n-modal-body {
+    padding: 20px;
+  }
+
+  // 隐藏PC端左侧菜单,但保留移动端的aside
+  .im-container .el-aside:not(.aside-session-mobile) {
+    display: none !important;
+  }
+
+  // 微信风格头像 - 方形带圆角
+  .n-avatar,
+  .im-avatar,
+  .talk-item-avatar {
+    border-radius: 6px !important;
+    overflow: hidden;
+  }
+
+  // 微信风格加载提示
+  .load-toolbar {
+    background-color: #f5f5f5;
+    color: #999;
+    font-size: 13px;
+  }
+}
+
+// 平板适配
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+  .aside-session {
+    width: 280px;
+  }
+}
+
+// 横屏模式优化
+@media screen and (max-width: 768px) and (orientation: landscape) {
+  #drawer-container2 {
+    .el-footer {
+      min-height: 56px;
+      max-height: 140px;
+    }
+
+    .el-main {
+      padding-bottom: 64px; // 56px min-height
+    }
+  }
+
+  .ql-editor {
+    min-height: 40px;
+    max-height: 120px;
+    padding: 10px 12px;
+  }
+
+  .editor-mobile .mobile-toolbar-btn,
+  .editor-mobile .mobile-send-btn {
+    height: 36px;
+  }
+
+  .editor-mobile .mobile-send-btn {
+    width: 64px;
+  }
+}
+
+// 触摸设备优化
+@media (hover: none) and (pointer: coarse) {
+  // 移除hover效果
+  .menu-items:hover,
+  .icon:hover {
+    background-color: transparent;
+  }
+
+  // 添加active效果
+  .menu-items:active,
+  .icon:active {
+    opacity: 0.7;
+    transform: scale(0.95);
+  }
+}
+
+// 安全区域适配(iPhone X及以上)
+@supports (padding: max(0px)) {
+  .panel-header,
+  .el-footer {
+    padding-left: max(15px, env(safe-area-inset-left));
+    padding-right: max(15px, env(safe-area-inset-right));
+  }
+
+  .el-footer {
+    padding-bottom: max(15px, env(safe-area-inset-bottom));
+  }
+
+  .el-header {
+    padding-top: max(15px, env(safe-area-inset-top));
+  }
+}
+
+// 移动端暗色模式适配
+@media screen and (max-width: 768px) {
+  html[theme-mode='dark'] {
+    .im-container {
+      background-color: #1a1a1a;
+    }
+
+    .panel-header,
+    .el-header {
+      background-color: #2a2a2a;
+    }
+
+    .message-content {
+      color: #e0e0e0;
+    }
+  }
+}
+
+// PC端和全局微信风格头像
+.n-avatar,
+.im-avatar,
+.talk-item-avatar {
+  border-radius: 6px !important;
+  overflow: hidden;
+}

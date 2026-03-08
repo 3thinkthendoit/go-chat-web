@@ -1,6 +1,7 @@
 import '@/assets/css/define/theme.less'
 import '@/assets/css/define/global.less'
 import '@/assets/css/dropsize.less'
+import '@/assets/css/mobile.less'
 import { createApp } from 'vue'
 import router from './router'
 import App from './App.vue'

@@ -20,6 +20,13 @@ export default defineConfig(({ mode }) => {
     },
     root: process.cwd(),
     assetsInclude: ['./src/assets'],
+    server: {
+      host: '0.0.0.0', // 允许所有IP访问
+      port: 5174, // 开发服务器端口
+      strictPort: false, // 端口被占用时自动尝试下一个端口
+      open: false, // 不自动打开浏览器
+      cors: true // 启用CORS
+    },
     plugins: [
       vue(),
       vueJsx({}),

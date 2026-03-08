@@ -43,14 +43,70 @@ const props = defineProps({
   },
   groupMembers: {
     default: () => []
+  },
+  isMobile: {
+    type: Boolean,
+    default: false
   }
 })
 
 const editor = ref(null)
+const isMobile = computed(() => props.isMobile)
 
 const getQuill = () => {
   // @ts-ignore
   return editor?.value?.getQuill()
+}
+
+// 是否有输入内容（用于显示发送按钮或+号）
+const hasContent = computed(() => {
+  const quill = getQuill()
+  if (!quill) return false
+  const delta = quill.getContents()
+  const text = deltaToString(delta)
+  return text.trim().length > 0
+})
+
+// 点击输入框区域获取焦点
+const focusInput = (event: Event) => {
+  // 阻止事件冒泡，避免冲突
+  event.stopPropagation()
+  event.preventDefault()
+
+  const quill = getQuill()
+  if (quill) {
+    // 直接调用 focus() 方法
+    quill.focus()
+
+    // 设置光标位置到文本末尾或开始
+    const length = quill.getLength()
+
+    if (length > 1) {
+      quill.setSelection(length - 1, 0)
+    } else {
+      quill.setSelection(0, 0)
+    }
+  }
+}
+
+// 编辑器获得焦点
+const onFocus = () => {
+  console.log('Editor focused')
+}
+
+// 移动端动态调整输入框高度
+const adjustEditorHeight = () => {
+  if (!isMobile.value) return
+
+  const quill = getQuill()
+  if (!quill) return
+
+  const editorEl = quill.root
+  if (!editorEl) return
+
+  // 横向布局模式：使用CSS控制的min-height和max-height
+  // 这里只清空内联样式，让CSS生效
+  editorEl.style.height = ''
 }
 
 const getQuillSelectionIndex = () => {
@@ -337,6 +393,11 @@ function onEditorChange() {
   }
 
   emit('editor-event', emitCall('input_event', text))
+  
+  // 移动端动态调整输入框高度
+  if (isMobile.value) {
+    adjustEditorHeight()
+  }
 }
 
 function loadEditorDraftText() {
@@ -408,52 +469,106 @@ useEventBus([
 </script>
 
 <template>
-  <section class="el-container is-vertical editor">
-    <header class="el-header toolbar border-top">
-      <n-popover
-        placement="top-start"
-        trigger="click"
-        raw
-        :width="300"
-        ref="emoticonRef"
-        style="width: 500px; height: 250px; border-radius: 10px; overflow: hidden"
-      >
-        <template #trigger>
-          <div class="toolbar-item">
-            <n-icon size="18" class="icon" :component="SmilingFace" />
-            <p class="title">表情符号</p>
+  <section :class="['editor', { 'editor-mobile': isMobile }]">
+    <form enctype="multipart/form-data" style="display: none">
+      <input type="file" ref="fileImageRef" accept="image/*" @change="onUploadFile" />
+      <input type="file" ref="uploadFileRef" @change="onUploadFile" />
+    </form>
+
+    <!-- PC端: 工具栏在上方，输入框在下方 -->
+    <template v-if="!isMobile">
+      <header class="el-header toolbar border-top">
+        <n-popover
+          placement="top-start"
+          trigger="click"
+          raw
+          :width="300"
+          ref="emoticonRef"
+          style="width: 500px; height: 250px; border-radius: 10px; overflow: hidden"
+        >
+          <template #trigger>
+            <div class="toolbar-item">
+              <n-icon size="18" class="icon" :component="SmilingFace" />
+              <p class="title">表情符号</p>
+            </div>
+          </template>
+
+          <MeEditorEmoticon @on-select="onEmoticonEvent" />
+        </n-popover>
+
+        <div
+          class="toolbar-item"
+          v-for="nav in navs"
+          :key="nav.title"
+          v-show="nav.show"
+          @click="nav.click"
+        >
+          <n-icon size="18" class="icon" :component="nav.icon" />
+          <p class="title">{{ nav.title }}</p>
+        </div>
+      </header>
+
+      <main class="el-main">
+        <QuillEditor
+          ref="editor"
+          :options="editorOption"
+          @change="onEditorChange"
+          style="height: 70%"
+          @send-click="onSendMessage"
+        />
+      </main>
+    </template>
+
+    <!-- 移动端: 表情按钮 - 输入框 - 图片按钮 - 发送按钮（横向布局） -->
+    <template v-else>
+      <div class="mobile-editor-container">
+        <!-- 表情按钮 -->
+        <div class="mobile-toolbar-left">
+          <n-popover
+            placement="top"
+            trigger="click"
+            raw
+            :width="320"
+            ref="emoticonRef"
+            style="width: 100%; max-width: 400px; height: 280px; border-radius: 10px; overflow: hidden"
+          >
+            <template #trigger>
+              <div class="mobile-toolbar-btn">
+                <n-icon size="24" :component="SmilingFace" />
+              </div>
+            </template>
+            <MeEditorEmoticon @on-select="onEmoticonEvent" />
+          </n-popover>
+        </div>
+
+        <!-- 输入框 -->
+        <div class="mobile-input-wrapper" @click.stop="focusInput">
+          <QuillEditor
+            ref="editor"
+            :options="editorOption"
+            @change="onEditorChange"
+            @send-click="onSendMessage"
+            @focus="onFocus"
+          />
+        </div>
+
+        <!-- 右侧按钮组：图片、发送 -->
+        <div class="mobile-toolbar-right">
+          <!-- 图片按钮 -->
+          <div class="mobile-toolbar-btn" @click="fileImageRef.click()">
+            <n-icon size="24" :component="Pic" />
           </div>
-        </template>
 
-        <MeEditorEmoticon @on-select="onEmoticonEvent" />
-      </n-popover>
-
-      <div
-        class="toolbar-item"
-        v-for="nav in navs"
-        :key="nav.title"
-        v-show="nav.show"
-        @click="nav.click"
-      >
-        <n-icon size="18" class="icon" :component="nav.icon" />
-        <p class="title">{{ nav.title }}</p>
+          <!-- 发送按钮 -->
+          <div
+            class="mobile-send-btn"
+            @click="onSendMessage"
+          >
+            <span>Send</span>
+          </div>
+        </div>
       </div>
-    </header>
-
-    <main class="el-main">
-      <form enctype="multipart/form-data" style="display: none">
-        <input type="file" ref="fileImageRef" accept="image/*" @change="onUploadFile" />
-        <input type="file" ref="uploadFileRef" @change="onUploadFile" />
-      </form>
-
-      <QuillEditor
-        ref="editor"
-        :options="editorOption"
-        @change="onEditorChange"
-        style="height: 70%"
-        @send-click="onSendMessage"
-      />
-    </main>
+    </template>
   </section>
 
   <MeEditorVote v-if="isShowEditorVote" @close="isShowEditorVote = false" @submit="onVoteEvent" />
@@ -476,20 +591,35 @@ useEventBus([
   --tip-bg-color: rgb(241 241 241 / 90%);
 
   height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  &.editor-mobile {
+    height: auto !important;
+    min-height: 52px !important;
+  }
 
   .toolbar {
-    height: 38px;
+    height: 36px;
     display: flex;
+    align-items: center;
+    padding: 0 5px;
 
     .toolbar-item {
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 35px;
+      width: 36px;
+      height: 36px;
       margin: 0 2px;
       position: relative;
       user-select: none;
       cursor: pointer;
+      color: #000;
+
+      .icon {
+        color: #000;
+      }
 
       .title {
         display: none;
@@ -515,6 +645,140 @@ useEventBus([
   }
 }
 
+// 移动端编辑器样式（微信风格横向布局）
+@media screen and (max-width: 768px) {
+  .editor:not(.editor-mobile) {
+    // PC端样式保持不变
+  }
+
+  .editor-mobile {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 52px !important;
+
+    .mobile-editor-container {
+      width: 100% !important;
+      display: flex !important;
+      align-items: flex-end !important;
+      gap: 6px !important;
+      padding: 8px !important;
+      background-color: #e8e8e8 !important;
+      border-top: 1px solid #e5e5e5 !important;
+      height: auto !important;
+      min-height: 52px !important;
+
+      // 左侧工具栏（表情）
+      .mobile-toolbar-left {
+        width: 40px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+      }
+
+      // 输入框（中间，自适应）
+      .mobile-input-wrapper {
+        flex: 1 1 auto !important;
+        min-width: 100px;
+        min-height: 40px;
+        display: flex;
+        align-items: stretch;
+
+        .ql-container {
+          width: 100%;
+          min-height: 40px;
+          background-color: #ffffff;
+        }
+
+        .ql-editor {
+          // 微信风格输入框
+          background-color: #ffffff;
+          border-radius: 6px;
+          font-size: 16px; // 防止iOS缩放
+          line-height: 1.5;
+          padding: 8px 12px;
+          min-height: 40px;
+          max-height: 120px;
+          overflow-y: auto;
+          box-shadow: none;
+          margin: 0;
+          width: 100%;
+          height: auto;
+
+          // 占位符样式
+          &.ql-blank::before {
+            color: #b0b0b0;
+            font-size: 16px;
+          }
+        }
+
+        .ql-container.ql-snow {
+          border: none;
+        }
+
+        // 隐藏滚动条
+        .ql-editor::-webkit-scrollbar {
+          width: 0;
+          display: none;
+        }
+      }
+
+      // 右侧工具栏（图片、发送）
+      .mobile-toolbar-right {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      // 工具栏按钮
+      .mobile-toolbar-btn {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        cursor: pointer;
+        color: #333;
+        background-color: transparent;
+        transition: all 0.2s ease;
+
+        &:active {
+          opacity: 0.6;
+          transform: scale(0.95);
+        }
+
+        .n-icon {
+          color: #333;
+        }
+      }
+
+      // 发送按钮
+      .mobile-send-btn {
+        width: 60px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        font-size: 15px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        user-select: none;
+        background-color: rgb(24, 144, 255);
+        color: #ffffff;
+
+        &:active {
+          opacity: 0.8;
+          transform: scale(0.95);
+        }
+      }
+    }
+  }
+}
+
 html[theme-mode='dark'] {
   .editor {
     --tip-bg-color: #48484d;
@@ -528,8 +792,13 @@ html[theme-mode='dark'] {
 }
 
 .ql-editor {
-  padding: 8px;
+  padding: 10px 12px;
   border: unset;
+  font-size: 15px;
+  line-height: 1.6;
+  background-color: #ffffff;
+  border-radius: 6px;
+  min-height: 36px;
 
   &::-webkit-scrollbar {
     width: 3px;
@@ -554,7 +823,192 @@ html[theme-mode='dark'] {
     PingFang SC,
     Microsoft YaHei,
     'Alibaba PuHuiTi 2.0 45' !important;
-  left: 8px;
+  left: 12px;
+  font-style: normal;
+  color: #999;
+}
+
+// 移动端输入框样式（微信风格，覆盖全局样式）
+@media screen and (max-width: 768px) {
+  .editor-mobile .mobile-input-wrapper .ql-container {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 40px !important;
+  }
+
+  .editor-mobile .mobile-input-wrapper .ql-editor {
+    background-color: #ffffff !important;
+    border-radius: 6px !important;
+    font-size: 16px !important;
+    line-height: 1.5 !important;
+    padding: 8px 12px !important;
+    min-height: 40px !important;
+    max-height: 120px !important;
+    margin: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    box-sizing: border-box !important;
+    display: block !important;
+
+    &.ql-blank::before {
+      color: #b0b0b0 !important;
+      font-size: 16px !important;
+    }
+
+    &::-webkit-scrollbar {
+      width: 0 !important;
+      display: none !important;
+    }
+  }
+
+  .editor-mobile .mobile-input-wrapper .ql-container.ql-snow {
+    border: none !important;
+    background-color: #ffffff !important;
+    height: auto !important;
+    min-height: 40px !important;
+    border-radius: 6px !important;
+  }
+
+  .editor-mobile .mobile-input-wrapper {
+    flex: 1 !important;
+    min-width: 100px !important;
+    background-color: #e8e8e8 !important;
+    padding: 0 !important;
+    position: relative !important;
+    z-index: 1 !important;
+    height: auto !important;
+    min-height: 40px !important;
+    border-radius: 6px !important;
+    cursor: text !important;
+  }
+
+  // 确保 quill-editor 容器铺满 wrapper
+  .editor-mobile .mobile-input-wrapper .quill-editor {
+    width: 100% !important;
+    height: auto !important;
+    display: flex !important;
+    position: relative !important;
+  }
+
+  // 确保第一个 section（实际的编辑器）铺满
+  .editor-mobile .mobile-input-wrapper .quill-editor section:first-child {
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  // 确保编辑器获得焦点时显示光标
+  .editor-mobile .mobile-input-wrapper .ql-editor:focus {
+    outline: none !important;
+    background-color: #ffffff !important;
+  }
+
+  .editor-mobile .mobile-input-wrapper .ql-editor.ql-focused {
+    outline: none !important;
+    background-color: #ffffff !important;
+  }
+
+  // 确保空状态下也有光标
+  .editor-mobile .mobile-input-wrapper .ql-editor.ql-blank:focus::before {
+    display: none !important;
+  }
+
+  // 确保光标正确显示
+  .editor-mobile .mobile-input-wrapper .ql-editor .ql-cursor {
+    display: inline-block !important;
+    width: 2px !important;
+    background-color: #000 !important;
+  }
+
+  // 强制显示光标
+  .editor-mobile .mobile-input-wrapper .ql-container.ql-snow .ql-editor {
+    caret-color: #000 !important;
+    min-height: 40px !important;
+    max-height: 120px !important;
+    height: auto !important;
+  }
+
+  // 空状态下强制显示光标
+  .editor-mobile .mobile-input-wrapper .ql-editor.ql-blank.ql-focused {
+    caret-color: #000 !important;
+  }
+
+  .editor-mobile .mobile-editor-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    display: flex !important;
+    align-items: flex-end !important;
+    gap: 6px !important;
+    padding: 8px !important;
+    background-color: #e8e8e8 !important;
+    border-top: 1px solid #e5e5e5 !important;
+    height: auto !important;
+    min-height: 52px !important;
+  }
+
+  .editor-mobile .mobile-toolbar-left {
+    width: 40px !important;
+    flex-shrink: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+
+  .editor-mobile .mobile-input-wrapper {
+    flex: 1 !important;
+    min-width: 100px !important;
+    min-height: 40px !important;
+    display: flex !important;
+    align-items: flex-end !important;
+  }
+
+  .editor-mobile .mobile-toolbar-right {
+    flex-shrink: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+  }
+
+  .editor-mobile .mobile-toolbar-btn {
+    width: 40px !important;
+    height: 40px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+    color: #333 !important;
+    background-color: transparent !important;
+    transition: all 0.2s ease !important;
+
+    &:active {
+      opacity: 0.6 !important;
+      transform: scale(0.95) !important;
+    }
+
+    .n-icon {
+      color: #333 !important;
+    }
+  }
+
+  .editor-mobile .mobile-send-btn {
+    width: 70px !important;
+    height: 40px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 4px !important;
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    user-select: none !important;
+    background-color: rgb(24, 144, 255) !important;
+    color: #ffffff !important;
+
+    &:active {
+      opacity: 0.8 !important;
+      transform: scale(0.95) !important;
+    }
+  }
 }
 
 .ql-snow .ql-editor img {

@@ -11,6 +11,7 @@ import { ContactConst } from '@/constant/event-bus'
 import { useTalkStore } from '@/store'
 import { useRouter } from 'vue-router'
 import Dropdown from '@/components/base/Dropdown.vue'
+import ResponsiveContainer from '@/components/base/ResponsiveContainer.vue'
 
 const router = useRouter()
 const talkStore = useTalkStore()
@@ -102,100 +103,163 @@ useEventBus([{ name: ContactConst.UpdateRemark, event: onChangeRemark }])
 </script>
 
 <template>
-  <section class="el-container is-vertical height100">
-    <header class="el-header from-header border-bottom">
-      <div class="groups">
-        <n-tabs v-if="groups.length" v-model:value="index">
-          <n-tab v-for="tab in groups" :key="tab.id" :name="tab.id">
-            {{ tab.name }}({{ tab.count }})
-          </n-tab>
-        </n-tabs>
-      </div>
-      <div class="tools">
-        <n-space>
+  <ResponsiveContainer title="我的好友" mobile-title="我的好友">
+    <template #pc>
+      <section class="el-container is-vertical height100">
+        <header class="el-header from-header border-bottom">
+          <div class="groups">
+            <n-tabs v-if="groups.length" v-model:value="index">
+              <n-tab v-for="tab in groups" :key="tab.id" :name="tab.id">
+                {{ tab.name }}({{ tab.count }})
+              </n-tab>
+            </n-tabs>
+          </div>
+          <div class="tools">
+            <n-space>
+              <n-input
+                v-model:value.trim="keywords"
+                placeholder="搜索"
+                clearable
+                style="width: 200px"
+                round
+              >
+                <template #prefix>
+                  <n-icon :component="Search" />
+                </template>
+              </n-input>
+
+              <n-dropdown
+                :animated="true"
+                trigger="hover"
+                :show-arrow="true"
+                @select="onToolsMenu"
+                :options="[
+                  {
+                    label: '添加好友',
+                    key: 'add'
+                  },
+                  {
+                    label: '分组管理',
+                    key: 'group'
+                  }
+                ]"
+              >
+                <n-button circle>
+                  <template #icon>
+                    <n-icon :component="Plus" />
+                  </template>
+                </n-button>
+              </n-dropdown>
+            </n-space>
+          </div>
+        </header>
+
+        <main class="el-main" style="padding-bottom: 10px" v-if="filter.length">
+          <n-virtual-list style="max-height: inherit" :item-size="80" :items="filter">
+            <template #default="{ item }">
+              <div :key="item.user_id" class="item-box pointer">
+                <div class="avatar" @click="onInfo(item)">
+                  <im-avatar :src="item.avatar" :size="40" :username="item.nickname" />
+                </div>
+                <div class="content" @click="onInfo(item)">
+                  <div class="content-title">
+                    <span>{{ item.remark || item.nickname }}</span>
+                    <span>
+                      <n-icon v-if="item.gender == 1" :component="Male" color="#508afe" />
+                      <n-icon v-if="item.gender == 2" :component="Female" color="#ff5722" />
+                    </span>
+                  </div>
+                  <div class="content-text text-ellipsis">
+                    个性签名: {{ item.motto ? item.motto : '暂无' }}
+                  </div>
+                </div>
+                <div class="tool">
+                  <n-button text size="small" type="primary" @click="onToTalk(item)"> 发消息 </n-button>
+                  <Dropdown
+                    :value="item"
+                    :options="[
+                      {
+                        label: '编辑备注',
+                        key: 'change-remark'
+                      },
+                      {
+                        label: '删除好友',
+                        key: 'delete-contact'
+                      }
+                    ]"
+                    @select="onClickDropdown"
+                  />
+                </div>
+              </div>
+            </template>
+          </n-virtual-list>
+        </main>
+
+        <main class="el-main flex-center" v-else v-loading="loading">
+          <n-empty description="暂无相关数据" />
+        </main>
+      </section>
+    </template>
+
+    <template #mobile>
+      <div class="friend-mobile-wrapper">
+        <!-- 搜索框 -->
+        <div class="mobile-search-box">
           <n-input
             v-model:value.trim="keywords"
-            placeholder="搜索"
+            placeholder="搜索好友"
             clearable
-            style="width: 200px"
             round
           >
             <template #prefix>
               <n-icon :component="Search" />
             </template>
           </n-input>
+        </div>
 
-          <n-dropdown
-            :animated="true"
-            trigger="hover"
-            :show-arrow="true"
-            @select="onToolsMenu"
-            :options="[
-              {
-                label: '添加好友',
-                key: 'add'
-              },
-              {
-                label: '分组管理',
-                key: 'group'
-              }
-            ]"
+        <!-- 分组标签 -->
+        <div v-if="groups.length" class="mobile-tabs">
+          <div
+            v-for="tab in groups"
+            :key="tab.id"
+            class="mobile-tab"
+            :class="{ active: index === tab.id }"
+            @click="index = tab.id"
           >
-            <n-button circle>
-              <template #icon>
-                <n-icon :component="Plus" />
-              </template>
-            </n-button>
-          </n-dropdown>
-        </n-space>
-      </div>
-    </header>
+            {{ tab.name }}
+          </div>
+        </div>
 
-    <main class="el-main" style="padding-bottom: 10px" v-if="filter.length">
-      <n-virtual-list style="max-height: inherit" :item-size="80" :items="filter">
-        <template #default="{ item }">
-          <div :key="item.user_id" class="item-box pointer">
-            <div class="avatar" @click="onInfo(item)">
-              <im-avatar :src="item.avatar" :size="40" :username="item.nickname" />
+        <!-- 好友列表 -->
+        <div v-if="filter.length" class="friend-list">
+          <div
+            v-for="item in filter"
+            :key="item.user_id"
+            class="friend-item-mobile"
+          >
+            <div class="friend-avatar" @click="onInfo(item)">
+              <im-avatar :src="item.avatar" :size="48" :username="item.nickname" />
             </div>
-            <div class="content" @click="onInfo(item)">
-              <div class="content-title">
-                <span>{{ item.remark || item.nickname }}</span>
-                <span>
-                  <n-icon v-if="item.gender == 1" :component="Male" color="#508afe" />
-                  <n-icon v-if="item.gender == 2" :component="Female" color="#ff5722" />
-                </span>
-              </div>
-              <div class="content-text text-ellipsis">
-                个性签名: {{ item.motto ? item.motto : '暂无' }}
+            <div class="friend-info" @click="onInfo(item)">
+              <div class="friend-name">{{ item.remark || item.nickname }}</div>
+              <div class="friend-signature text-ellipsis">
+                {{ item.motto ? item.motto : '暂无个性签名' }}
               </div>
             </div>
-            <div class="tool">
-              <n-button text size="small" type="primary" @click="onToTalk(item)"> 发消息 </n-button>
-              <Dropdown
-                :value="item"
-                :options="[
-                  {
-                    label: '编辑备注',
-                    key: 'change-remark'
-                  },
-                  {
-                    label: '删除好友',
-                    key: 'delete-contact'
-                  }
-                ]"
-                @select="onClickDropdown"
-              />
+            <div class="friend-actions">
+              <n-button size="small" type="primary" @click="onToTalk(item)">
+                发消息
+              </n-button>
             </div>
           </div>
-        </template>
-      </n-virtual-list>
-    </main>
+        </div>
 
-    <main class="el-main flex-center" v-else v-loading="loading">
-      <n-empty description="暂无相关数据" />
-    </main>
-  </section>
+        <div v-else class="mobile-empty">
+          <n-empty description="暂无相关数据" />
+        </div>
+      </div>
+    </template>
+  </ResponsiveContainer>
 
   <!-- 用户查询模态框 -->
   <UserSearchModal v-model:show="isShowUserSearch" />
@@ -295,6 +359,84 @@ useEventBus([{ name: ContactConst.UpdateRemark, event: onChangeRemark }])
   }
 }
 
+// 移动端样式
+.friend-mobile-wrapper {
+  padding: 10px;
+}
+
+.mobile-search-box {
+  margin-bottom: 10px;
+}
+
+.mobile-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 5px 0;
+  margin-bottom: 10px;
+
+  .mobile-tab {
+    padding: 6px 14px;
+    background-color: #f5f5f5;
+    border-radius: 16px;
+    font-size: 13px;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.3s;
+
+    &.active {
+      background-color: #07c160;
+      color: #fff;
+    }
+  }
+}
+
+.friend-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.friend-item-mobile {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  background-color: #fff;
+  border-radius: 8px;
+  gap: 12px;
+
+  .friend-avatar {
+    flex-shrink: 0;
+  }
+
+  .friend-info {
+    flex: 1;
+    min-width: 0;
+
+    .friend-name {
+      font-size: 15px;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .friend-signature {
+      font-size: 12px;
+      color: #999;
+    }
+  }
+
+  .friend-actions {
+    flex-shrink: 0;
+  }
+}
+
+.mobile-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+}
+
 html[theme-mode='dark'] {
   .item-box {
     background-color: rgba(255, 255, 255, 5%);
@@ -308,6 +450,29 @@ html[theme-mode='dark'] {
       &-text {
         color: rgba(255, 255, 255, 50%);
       }
+    }
+  }
+
+  .mobile-tabs {
+    .mobile-tab {
+      background-color: #2a2a2a;
+      color: #e0e0e0;
+
+      &.active {
+        background-color: #07c160;
+      }
+    }
+  }
+
+  .friend-item-mobile {
+    background-color: #2a2a2a;
+
+    .friend-name {
+      color: #e0e0e0;
+    }
+
+    .friend-signature {
+      color: #999;
     }
   }
 }

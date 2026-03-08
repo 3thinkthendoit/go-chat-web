@@ -172,6 +172,22 @@ const isActive = (menu) => {
       justify-content: center;
     }
   }
+
+  // 移动端适配
+  @media screen and (max-width: 768px) {
+    .menu-header {
+      height: 70px;
+      padding-top: 12px;
+
+      .online-status {
+        font-size: 11px;
+      }
+    }
+
+    .menu-footer {
+      height: 60px;
+    }
+  }
 }
 
 .menu-items {
@@ -202,6 +218,14 @@ const isActive = (menu) => {
     animation: notifymove 3s infinite;
     animation-direction: alternate;
     -webkit-animation: notifymove 3s infinite;
+  }
+
+  // 移动端适配
+  @media screen and (max-width: 768px) {
+    width: 48px;
+    height: 48px;
+    margin: 6px auto;
+    font-size: 11px;
   }
 }
 

@@ -16,7 +16,7 @@ defineProps<{
 <template>
   <div class="talk-item pointer" :class="{ actived: active }" @click="emit('tab-talk', data)">
     <div class="talk-item-avatar">
-      <im-avatar :src="avatar" :size="34" :username="data.name" />
+      <im-avatar :src="avatar" :size="48" :username="data.name" />
       <div class="top-mask" @click.stop="emit('top-talk', data)">
         <n-icon :component="data.is_top === 1 ? ArrowDown : ArrowUp" />
       </div>
@@ -67,17 +67,17 @@ defineProps<{
 .talk-item {
   --actived-bg: rgba(24, 144, 255, 0.12);
 
-  padding: 8px 5px;
-  height: 50px;
+  padding: 12px 10px;
+  height: 70px;
   display: flex;
   align-items: center;
   border-radius: 10px;
   margin: 0 5px;
 
   &-avatar {
-    height: 34px;
-    width: 34px;
-    border-radius: 50%;
+    height: 48px;
+    width: 48px;
+    border-radius: 6px;
     display: flex;
     justify-content: center;
     align-items: center;

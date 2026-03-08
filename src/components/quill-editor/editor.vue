@@ -83,9 +83,16 @@ function sendMessage(){
   <section class="quill-editor">
     <section ref="editor" />
     <section>
-      <n-button  strong secondary type="tertiary" @click="sendMessage" style="right: 0;position: absolute;margin-right: 20px;width: 100px;">发送</n-button>
+      <n-button  strong secondary type="tertiary" @click="sendMessage" style="right: 0;position: absolute;margin-right: 20px;width: 100px;">Send</n-button>
     </section>
   </section>
 </template>
 
-<style scoped></style>
+<style scoped>
+/* 移动端隐藏 QuillEditor 内部的发送按钮 */
+@media screen and (max-width: 768px) {
+  .quill-editor section:nth-child(2) {
+    display: none !important;
+  }
+}
+</style>
