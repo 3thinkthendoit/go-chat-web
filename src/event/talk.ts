@@ -162,10 +162,6 @@ class Talk extends Base {
       },
       this.isCurrSender()
     )
-    useDialogueStore().updateDialogueRecord({
-      msg_id: this.body.msg_id,
-      is_revoke: 1
-    })
     if (this.getAccountId() !== this.from_id) {
       ServeClearTalkUnreadNum({
         talk_mode: this.talk_mode,

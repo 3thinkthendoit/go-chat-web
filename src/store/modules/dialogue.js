@@ -4,6 +4,8 @@ import { ServeGetGroupMembers } from '@/api/group'
 import { toApi } from '@/api'
 import { ServeCustomizeEmoticonCreate } from '@/api/emoticon'
 import { useEditorStore } from './editor'
+import { useTalkStore } from './talk'
+import { parseTime } from '@/utils/datetime'
 
 // 键盘消息事件定时器
 let keyboardTimeout = null
@@ -190,13 +192,51 @@ export const useDialogueStore = defineStore('dialogue', {
 
     // 撤销聊天记录
     async ApiRevokeRecord(msg_id = '') {
+      console.log('[ApiRevokeRecord] Calling API with:', {
+        talk_mode: this.talk.talk_type,
+        to_from_id: this.talk.receiver_id,
+        msg_id
+      })
+
       const { code, data } = await toApi(ServeRevokeRecords, {
         talk_mode: this.talk.talk_type,
         to_from_id: this.talk.receiver_id,
         msg_id
       })
 
-      code == 200 && this.updateDialogueRecord({ msg_id, is_revoke: 1 })
+      console.log('[ApiRevokeRecord] API response:', { code, data })
+
+      if (code == 200) {
+        console.log('[ApiRevokeRecord] Updating dialogue record with is_revoked: 1')
+        this.updateDialogueRecord({ msg_id, is_revoked: 1 })
+
+        // 更新左侧消息列表的撤回提示
+        const talkStore = useTalkStore()
+
+        // 查找当前会话索引
+        const indexName = `${this.talk.talk_type}_${this.talk.receiver_id}`
+
+        // 判断撤回的消息是否是最后一条消息
+        const isLastMessage = this.records.length > 0 &&
+          String(this.records[this.records.length - 1].msg_id) === String(msg_id)
+
+        console.log('[ApiRevokeRecord] isLastMessage:', isLastMessage)
+
+        if (isLastMessage) {
+          // 生成撤回提示文本
+          const revokeText = '你撤回了一条消息'
+
+          console.log('[ApiRevokeRecord] Updating talk item with:', { indexName, revokeText })
+
+          talkStore.updateItem({
+            index_name: indexName,
+            msg_text: revokeText,
+            updated_at: parseTime(new Date(), '{y}-{m}-{d} {h}:{i}:{s}')
+          })
+        }
+      } else {
+        console.error('[ApiRevokeRecord] API failed with code:', code)
+      }
     },
 
     // 转发聊天记录

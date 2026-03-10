@@ -72,22 +72,50 @@ class Revoke extends Base {
   }
 
   handle() {
-    console.log("isTevoke")
-    useTalkStore().updateItem({
-      index_name: this.getIndexName(),
-      msg_text: this.resource.text,
-      updated_at: parseTime(new Date(), '{y}-{m}-{d} {h}:{i}:{s}') as string
-    })
+    const indexName = this.getIndexName()
+    console.log('[Revoke] indexName:', indexName)
+    console.log('[Revoke] msg_id:', this.msg_id)
+    console.log('[Revoke] resource:', this.resource)
 
-    // 判断当前是否正在和好友对话
-    if (!this.isTalk(this.talk_type, this.receiver_id)) {
-      return
-    }
-     console.log("isTalk")
+    // 更新对话记录为撤回状态
     useDialogueStore().updateDialogueRecord({
       msg_id: this.msg_id,
-      is_revoke: 1
+      is_revoked: 1
     })
+
+    // 获取当前对话记录
+    const dialogueStore = useDialogueStore()
+    const records = dialogueStore.records
+
+    console.log('[Revoke] records count:', records.length)
+    if (records.length > 0) {
+      console.log('[Revoke] last msg_id:', records[records.length - 1].msg_id)
+    }
+
+    // 判断撤回的消息是否是最后一条消息
+    const isLastMessage = records.length > 0 &&
+      String(records[records.length - 1].msg_id) === String(this.msg_id)
+
+    console.log('[Revoke] isLastMessage:', isLastMessage)
+
+    // 无论是否在当前对话窗口，只要撤回的是最后一条消息，就更新左侧列表
+    if (isLastMessage) {
+      const revokeText = this.resource.text || (this.isCurrSender() ? '你撤回了一条消息' : '对方撤回了一条消息')
+
+      console.log('[Revoke] Updating left sidebar with:', revokeText)
+
+      useTalkStore().updateItem({
+        index_name: indexName,
+        msg_text: revokeText,
+        updated_at: parseTime(new Date(), '{y}-{m}-{d} {h}:{i}:{s}') as string
+      })
+
+      // 验证更新
+      const talkItem = useTalkStore().findItem(indexName)
+      console.log('[Revoke] Updated talkItem msg_text:', talkItem?.msg_text)
+    } else {
+      console.log('[Revoke] Not last message, skipping left sidebar update')
+    }
   }
 }
 
