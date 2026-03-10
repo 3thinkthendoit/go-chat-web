@@ -210,6 +210,44 @@ defineProps<{
   }
 }
 
+// PC端样式 - LumenIM风格
+@media screen and (min-width: 769px) {
+  .talk-item {
+    padding: 8px 5px;
+    height: 50px;
+
+    &-avatar {
+      height: 34px;
+      width: 34px;
+      border-radius: 50%;
+
+      :deep(.im-avatar) {
+        width: 34px !important;
+        height: 34px !important;
+      }
+    }
+  }
+}
+
+// 移动端样式 - 保持原有微信风格
+@media screen and (max-width: 768px) {
+  .talk-item {
+    padding: 12px 10px;
+    height: 70px;
+
+    &-avatar {
+      height: 48px;
+      width: 48px;
+      border-radius: 6px;
+
+      :deep(.im-avatar) {
+        width: 48px !important;
+        height: 48px !important;
+      }
+    }
+  }
+}
+
 .badge {
   &.top {
     color: red !important;

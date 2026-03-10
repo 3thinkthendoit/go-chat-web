@@ -439,10 +439,9 @@ onMounted(() => {
   height: 100%;
   width: 100%;
   box-sizing: border-box;
-  padding: 0;
+  padding: 10px 15px 30px;
   overflow-y: auto;
   overflow-x: hidden;
-  background-color: #f5f5f5;
 
   .load-toolbar {
     height: 38px;
@@ -465,17 +464,22 @@ onMounted(() => {
   .message-box {
     width: 100%;
     min-height: 30px;
-    margin-bottom: 8px;
+    margin-bottom: 5px;
   }
 
   .datetime {
-    display: none; // 微信风格不显示时间戳
+    height: 30px;
+    line-height: 30px;
+    color: #ccc9c9;
+    font-size: 12px;
+    text-align: center;
+    margin: 5px 0;
+    user-select: none;
   }
 
   .record-box {
     display: flex;
     flex-direction: row;
-    padding: 10px 15px;
 
     .checkbox-column {
       display: flex;
@@ -487,17 +491,17 @@ onMounted(() => {
     }
 
     .avatar-column {
-      width: 40px;
+      width: 35px;
       display: flex;
       align-items: center;
       order: 2;
       user-select: none;
-      flex-shrink: 0;
-      padding-top: 0;
+      padding-top: 10px;
+      flex-direction: column;
 
       :deep(.im-avatar) {
-        width: 40px !important;
-        height: 40px !important;
+        width: 35px !important;
+        height: 35px !important;
         border-radius: 6px;
         overflow: hidden;
       }
@@ -513,18 +517,49 @@ onMounted(() => {
       min-height: 30px;
 
       .talk-title {
-        display: none; // 微信风格不显示时间戳
+        display: flex;
+        align-items: center;
+        height: 24px;
+        margin-bottom: 2px;
+        font-size: 12px;
+        user-select: none;
+        color: #a7a0a0;
+        opacity: 1;
+
+        &.show {
+          opacity: 1;
+        }
+
+        .nickname {
+          color: var(--im-text-color);
+          margin-right: 5px;
+
+          .at {
+            display: none;
+          }
+
+          &:hover {
+            color: var(--im-primary-color);
+
+            .at {
+              display: inline-block;
+            }
+          }
+        }
+
+        span {
+          transform: scale(0.88);
+          transform-origin: left center;
+        }
       }
 
       .talk-content {
         display: flex;
         justify-content: flex-start;
-        align-items: flex-start;
+        align-items: flex-end;
 
         box-sizing: border-box;
         width: 100%;
-        padding: 0 10px;
-        position: relative;
 
         .talk-tools {
           display: flex;
@@ -534,7 +569,6 @@ onMounted(() => {
           user-select: none;
           align-items: center;
           justify-content: space-around;
-          align-self: center;
 
           .more-tools {
             visibility: hidden;
@@ -548,21 +582,20 @@ onMounted(() => {
         align-items: flex-start;
         align-items: center;
         width: fit-content;
-        padding: 6px 10px;
-        margin-top: 6px;
+        padding: 4px;
+        margin-top: 3px;
         margin-right: auto;
-        font-size: 13px;
-        color: #666;
+        font-size: 12px;
+        color: #8f8f8f;
         word-break: break-all;
-        background-color: #f0f0f0;
-        border-radius: 6px;
+        background-color: var(--im-message-left-bg-color);
+        border-radius: 5px;
         max-width: 300px;
         overflow: hidden;
         user-select: none;
 
         .icon-top {
-          margin-right: 5px;
-          color: #999;
+          margin-right: 3px;
         }
 
         .ellipsis {
@@ -570,7 +603,6 @@ onMounted(() => {
           text-overflow: ellipsis;
           -webkit-line-clamp: 3;
           -webkit-box-orient: vertical;
-          color: #333;
         }
       }
 
@@ -603,37 +635,6 @@ onMounted(() => {
 
         .talk-content {
           flex-direction: row-reverse;
-
-          // 蓝色气泡样式
-          :deep(.immsg) {
-            background-color: rgb(24, 144, 255) !important;
-            color: #fff;
-            border-radius: 8px;
-            padding: 10px 14px;
-            max-width: calc(100vw - 100px);
-
-            &::before {
-              content: '';
-              position: absolute;
-              right: -6px;
-              top: 14px;
-              width: 0;
-              height: 0;
-              border-top: 6px solid transparent;
-              border-bottom: 6px solid transparent;
-              border-left: 6px solid rgb(24, 144, 255);
-            }
-          }
-
-          // 图片消息：移除背景颜色
-          :deep(.immsg-image) {
-            background-color: transparent !important;
-            padding: 0 !important;
-
-            &::before {
-              display: none !important;
-            }
-          }
         }
 
         .talk-reply {
@@ -654,10 +655,64 @@ onMounted(() => {
   }
 }
 
-// 微信风格消息气泡 - 对方消息
-.record-box:not(.direction-rt) {
-  .main-column {
-    .talk-content {
+// 移动端优化 - 保持原有微信风格
+@media screen and (max-width: 768px) {
+  .talk-container {
+    padding: 0;
+    background-color: #f5f5f5;
+  }
+
+  .talk-container .message-box {
+    margin-bottom: 8px;
+  }
+
+  .talk-container .datetime {
+    display: none;
+  }
+
+  .talk-container .record-box {
+    padding: 8px 12px;
+
+    .avatar-column {
+      width: 40px;
+      padding-top: 0;
+
+      :deep(.im-avatar) {
+        width: 40px !important;
+        height: 40px !important;
+      }
+    }
+
+    .main-column {
+      .talk-title {
+        display: none;
+      }
+
+      .talk-content {
+        padding: 0 10px;
+        align-items: center;
+      }
+
+      .talk-reply {
+        padding: 6px 10px;
+        margin-top: 6px;
+        font-size: 13px;
+        color: #666;
+        background-color: #f0f0f0;
+        border-radius: 6px;
+
+        .icon-top {
+          margin-right: 5px;
+        }
+
+        .ellipsis {
+          color: #333;
+        }
+      }
+    }
+
+    // 微信风格消息气泡 - 对方消息
+    &:not(.direction-rt) .main-column .talk-content {
       :deep(.immsg) {
         background-color: #fff !important;
         color: #000;
@@ -680,7 +735,39 @@ onMounted(() => {
         }
       }
 
-      // 图片消息：移除背景颜色
+      :deep(.immsg-image) {
+        background-color: transparent !important;
+        padding: 0 !important;
+
+        &::before {
+          display: none !important;
+        }
+      }
+    }
+
+    // 微信风格消息气泡 - 自己消息
+    &.direction-rt .main-column .talk-content {
+      :deep(.immsg) {
+        background-color: rgb(24, 144, 255) !important;
+        color: #fff;
+        border-radius: 8px;
+        padding: 10px 14px;
+        max-width: calc(100vw - 100px);
+        position: relative;
+
+        &::before {
+          content: '';
+          position: absolute;
+          right: -6px;
+          top: 14px;
+          width: 0;
+          height: 0;
+          border-top: 6px solid transparent;
+          border-bottom: 6px solid transparent;
+          border-left: 6px solid rgb(24, 144, 255);
+        }
+      }
+
       :deep(.immsg-image) {
         background-color: transparent !important;
         padding: 0 !important;
@@ -693,14 +780,7 @@ onMounted(() => {
   }
 }
 
-// 移动端优化
-@media screen and (max-width: 768px) {
-  .talk-container .record-box {
-    padding: 8px 12px;
-  }
-}
-
-// PC端微信风格
+// PC端LumenIM风格
 @media screen and (min-width: 769px) {
   .talk-container .record-box {
     padding: 10px 15px;

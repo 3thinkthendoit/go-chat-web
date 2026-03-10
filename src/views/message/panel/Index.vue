@@ -236,7 +236,6 @@ useEventBus([
     width: 100vw !important;
     max-width: 100vw !important;
     height: 100%;
-    background-color: #f5f5f5;
     padding-bottom: 0; // TabBar是fixed定位，不需要padding-bottom
     box-sizing: border-box;
     overflow: hidden; // 防止内容溢出
@@ -255,19 +254,18 @@ useEventBus([
     .el-main {
       // 聊天内容区域
       padding-top: 50px; // Header高度
-      padding-bottom: 72px; // 为底部输入框预留空间(min-height 64px + padding 8px)
       box-sizing: border-box;
       overflow-y: auto;
       height: 100%;
 
       // 确保消息内容不会被遮挡
       .panel-content {
-        min-height: calc(100% - 72px);
+        min-height: 100%;
       }
     }
 
     .el-footer {
-      // Footer固定在底部（微信风格横向布局）
+      // Footer固定在底部
       position: fixed !important;
       bottom: 0 !important;
       left: 0 !important;
@@ -277,7 +275,6 @@ useEventBus([
       height: auto !important;
       min-height: 64px !important;
       max-height: 300px !important;
-      background-color: #e8e8e8 !important;
       border-top: 1px solid #e5e5e5 !important;
       padding: 0 !important;
       box-sizing: border-box !important;
@@ -307,17 +304,26 @@ useEventBus([
   }
 }
 
-// PC端微信风格
+// PC端LumenIM风格
 @media screen and (min-width: 769px) {
+  #drawer-container2 {
+    background-color: var(--im-bg-color);
+  }
+
+  .el-footer {
+    padding: 8px 15px;
+    box-sizing: border-box;
+  }
+}
+
+// 移动端微信风格
+@media screen and (max-width: 768px) {
   #drawer-container2 {
     background-color: #f5f5f5;
   }
 
   .el-footer {
-    background-color: #f7f7f7;
-    border-top: 1px solid #e5e5e5;
-    padding: 8px 15px;
-    box-sizing: border-box;
+    background-color: #e8e8e8 !important;
   }
 }
 </style>
