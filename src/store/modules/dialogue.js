@@ -133,6 +133,28 @@ export const useDialogueStore = defineStore('dialogue', {
       this.records.push(record)
     },
 
+    // 添加待发送的消息（显示在对话框中，带发送中状态）
+    addPendingMessage(record) {
+      this.records.push({
+        ...record,
+        is_sending: true, // 发送中状态
+        send_time: new Date().toISOString().replace('T', ' ').substring(0, 19)
+      })
+    },
+
+    // 更新消息发送状态
+    updateMessageStatus(msg_id, status) {
+      const item = this.records.find((item) => item.msg_id === msg_id)
+      if (item) {
+        item.is_sending = status === 'sending'
+        item.is_failed = status === 'failed'
+        if (status === 'success') {
+          item.is_sending = false
+          item.is_failed = false
+        }
+      }
+    },
+
     // 更新对话记录
     updateDialogueRecord(params) {
       const { msg_id = '' } = params
@@ -192,22 +214,13 @@ export const useDialogueStore = defineStore('dialogue', {
 
     // 撤销聊天记录
     async ApiRevokeRecord(msg_id = '') {
-      console.log('[ApiRevokeRecord] Calling API with:', {
-        talk_mode: this.talk.talk_type,
-        to_from_id: this.talk.receiver_id,
-        msg_id
-      })
-
       const { code, data } = await toApi(ServeRevokeRecords, {
         talk_mode: this.talk.talk_type,
         to_from_id: this.talk.receiver_id,
         msg_id
       })
 
-      console.log('[ApiRevokeRecord] API response:', { code, data })
-
       if (code == 200) {
-        console.log('[ApiRevokeRecord] Updating dialogue record with is_revoked: 1')
         this.updateDialogueRecord({ msg_id, is_revoked: 1 })
 
         // 更新左侧消息列表的撤回提示
@@ -220,13 +233,9 @@ export const useDialogueStore = defineStore('dialogue', {
         const isLastMessage = this.records.length > 0 &&
           String(this.records[this.records.length - 1].msg_id) === String(msg_id)
 
-        console.log('[ApiRevokeRecord] isLastMessage:', isLastMessage)
-
         if (isLastMessage) {
           // 生成撤回提示文本
           const revokeText = '你撤回了一条消息'
-
-          console.log('[ApiRevokeRecord] Updating talk item with:', { indexName, revokeText })
 
           talkStore.updateItem({
             index_name: indexName,
@@ -234,8 +243,6 @@ export const useDialogueStore = defineStore('dialogue', {
             updated_at: parseTime(new Date(), '{y}-{m}-{d} {h}:{i}:{s}')
           })
         }
-      } else {
-        console.error('[ApiRevokeRecord] API failed with code:', code)
       }
     },
 

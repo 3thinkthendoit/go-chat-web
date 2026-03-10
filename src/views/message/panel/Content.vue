@@ -374,6 +374,17 @@ onMounted(() => {
             </div>
 
             <div class="talk-content" :class="{ pointer: dialogueStore.isOpenMultiSelect }">
+              <!-- 发送中状态 -->
+              <div v-if="item.is_sending" class="sending-status">
+                <n-spin size="small" />
+              </div>
+
+              <!-- 发送失败状态 -->
+              <div v-else-if="item.is_failed" class="failed-status">
+                <n-icon :component="MoreThree" size="16" />
+                <span>发送失败</span>
+              </div>
+
               <component
                 class="immsg"
                 :is="MessageComponents[item.msg_type] || 'unknown-message'"
@@ -386,7 +397,7 @@ onMounted(() => {
                 @contextmenu.prevent="onContextMenu($event, item)"
               />
 
-              <div class="talk-tools">
+              <div class="talk-tools" v-if="!item.is_sending && !item.is_failed">
                 <n-icon
                   class="more-tools pointer"
                   :component="MoreThree"
@@ -560,6 +571,23 @@ onMounted(() => {
 
         box-sizing: border-box;
         width: 100%;
+
+        .sending-status {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-right: 8px;
+          color: #8bc34a;
+        }
+
+        .failed-status {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          margin-right: 8px;
+          color: #f44336;
+          font-size: 12px;
+        }
 
         .talk-tools {
           display: flex;

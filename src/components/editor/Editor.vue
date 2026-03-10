@@ -604,6 +604,7 @@ useEventBus([
     display: flex;
     align-items: center;
     padding: 0 5px;
+    background-color: #f5f5f5;
 
     .toolbar-item {
       display: flex;
@@ -694,7 +695,7 @@ useEventBus([
           // 微信风格输入框
           background-color: #ffffff;
           border-radius: 6px;
-          font-size: 16px; // 防止iOS缩放
+          font-size: 14px; // 调小字体大小
           line-height: 1.5;
           padding: 8px 12px;
           min-height: 40px;
@@ -794,7 +795,7 @@ html[theme-mode='dark'] {
 .ql-editor {
   padding: 10px 12px;
   border: unset;
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1.6;
   background-color: #ffffff;
   border-radius: 6px;
@@ -839,7 +840,7 @@ html[theme-mode='dark'] {
   .editor-mobile .mobile-input-wrapper .ql-editor {
     background-color: #ffffff !important;
     border-radius: 6px !important;
-    font-size: 16px !important;
+    font-size: 14px !important;
     line-height: 1.5 !important;
     padding: 8px 12px !important;
     min-height: 40px !important;

@@ -151,8 +151,48 @@ class Talk extends Base {
     if ([1102, 1103, 1104].includes(record.msg_type)) {
       useDialogueStore().updateGroupMembers()
     }
-    
-    useDialogueStore().addDialogueRecord(formatTalkRecord(this.getAccountId(), this.body))
+
+    const formattedRecord = formatTalkRecord(this.getAccountId(), this.body)
+
+    // 如果是当前用户发送的消息，查找并替换临时消息
+    if (this.isCurrSender()) {
+      // 查找临时消息（通过内容和类型匹配）
+      let tempIndex = -1
+
+      if (record.msg_type === 1) {
+        // 文本消息通过内容匹配
+        tempIndex = useDialogueStore().records.findIndex(
+          r => r.is_temp === true &&
+               r.user_id === record.user_id &&
+               r.msg_type === record.msg_type &&
+               r.extra?.content === this.body.extra?.content
+        )
+      } else if (record.msg_type === 3) {
+        // 图片消息通过URL匹配
+        tempIndex = useDialogueStore().records.findIndex(
+          r => r.is_temp === true &&
+               r.user_id === record.user_id &&
+               r.msg_type === record.msg_type &&
+               r.extra?.url === this.body.extra?.url
+        )
+      }
+
+      if (tempIndex >= 0) {
+        // 找到临时消息，替换为真实消息
+        useDialogueStore().records[tempIndex] = {
+          ...formattedRecord,
+          is_sending: false,
+          is_failed: false,
+          is_temp: false
+        }
+      } else {
+        // 没有找到临时消息，直接添加
+        useDialogueStore().addDialogueRecord(formattedRecord)
+      }
+    } else {
+      // 不是当前用户发送的消息，直接添加
+      useDialogueStore().addDialogueRecord(formattedRecord)
+    }
 
     useTalkStore().updateMessage(
       {

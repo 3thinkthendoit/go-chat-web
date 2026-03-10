@@ -1,11 +1,12 @@
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
 import {
   useTalkStore,
   useDialogueStore,
   useSettingsStore,
   useUploadsStore,
-  useEditorStore
+  useEditorStore,
+  useUserStore
 } from '@/store'
 import ws from '@/connect'
 import { ServePublishMessage } from '@/api/chat'
@@ -25,6 +26,7 @@ const editorStore = useEditorStore()
 const settingsStore = useSettingsStore()
 const uploadsStore = useUploadsStore()
 const dialogueStore = useDialogueStore()
+const userStore = useUserStore()
 const props = defineProps({
   uid: {
     type: Number,
@@ -57,14 +59,79 @@ const props = defineProps({
 
 const isShowHistory = ref(false)
 
+// 滚动到底部
+const scrollToBottom = () => {
+  nextTick(() => {
+    const el = document.getElementById('imChatPanel')
+    if (el) {
+      el.scrollTop = el.scrollHeight
+      setTimeout(() => {
+        el.scrollTop = el.scrollHeight
+      }, 50)
+      setTimeout(() => {
+        el.scrollTop = el.scrollHeight
+      }, 150)
+    }
+  })
+}
+
 const onSendMessage = async (data = {}, callBack: any) => {
   const params = {
     ...data,
     talk_mode: props.talkMode,
     to_from_id: props.toFromId
   }
-  const { code } = await toApi(ServePublishMessage, params)
-  callBack(code == 200)
+
+  // 如果是文本消息，先显示在对话框中
+  if (data.type === 'text') {
+    // 生成临时消息ID
+    const tempMsgId = 'temp_' + Date.now()
+
+    // 使用明文显示，而不是密文
+    const displayContent = data.plaintext || data.body.text
+
+    // 先在对话框中显示消息（发送中状态）
+    dialogueStore.records.push({
+      msg_id: tempMsgId,
+      msg_type: 1,
+      user_id: props.uid,
+      nickname: userStore.nickname || '我',
+      avatar: userStore.avatar || '',
+      float: 'right',
+      is_sending: true,
+      is_temp: true, // 标记为临时消息
+      send_time: new Date().toISOString().replace('T', ' ').substring(0, 19),
+      extra: {
+        content: displayContent
+      },
+      quote: null
+    })
+
+    // 滚动到底部
+    scrollToBottom()
+
+    // 调用API发送消息
+    const { code, data: responseData } = await toApi(ServePublishMessage, params)
+
+    if (code == 200) {
+      // 发送成功，保留临时消息标记，等待Socket推送真实消息后替换
+      // 不删除临时消息，避免抖动
+      callBack(true)
+    } else {
+      // 发送失败，更新状态为失败
+      const item = dialogueStore.records.find(r => r.msg_id === tempMsgId)
+      if (item) {
+        item.is_sending = false
+        item.is_failed = true
+        item.is_temp = false
+      }
+      callBack(false)
+    }
+  } else {
+    // 其他类型消息保持原有逻辑
+    const { code } = await toApi(ServePublishMessage, params)
+    callBack(code == 200)
+  }
 }
 
 // 发送文本消息
@@ -78,7 +145,8 @@ const onSendTextEvent = throttle((value: any) => {
     body: {
       text: msg,
       mentions: data.mentionUids
-    }
+    },
+    plaintext: text // 添加明文字段用于发送时显示
   }
   onSendMessage(message, (ok: boolean) => {
     ok && callBack(true)
@@ -86,13 +154,58 @@ const onSendTextEvent = throttle((value: any) => {
 }, 1000)
 
 // 发送图片消息
-const onSendImageEvent = ({ data, callBack }) => {
+const onSendImageEvent = async ({ data, callBack }) => {
+  // 生成临时消息ID
+  const tempMsgId = 'temp_' + Date.now()
+
+  // 先在对话框中显示图片消息（发送中状态）
+  dialogueStore.records.push({
+    msg_id: tempMsgId,
+    msg_type: 3,
+    user_id: props.uid,
+    nickname: userStore.nickname || '我',
+    avatar: userStore.avatar || '',
+    float: 'right',
+    is_sending: true,
+    is_temp: true, // 标记为临时消息
+    send_time: new Date().toISOString().replace('T', ' ').substring(0, 19),
+    extra: {
+      url: data.url,
+      width: data.width,
+      height: data.height,
+      name: data.name,
+      size: data.size
+    },
+    quote: null
+  })
+
+  // 滚动到底部
+  scrollToBottom()
+
   const message = {
     type: 'image',
     body: { ...data }
   }
 
-  onSendMessage(message, callBack)
+  const { code } = await toApi(ServePublishMessage, {
+    ...message,
+    talk_mode: props.talkMode,
+    to_from_id: props.toFromId
+  })
+
+  if (code == 200) {
+    // 发送成功，保留临时消息，等待Socket推送真实消息后替换
+    callBack(true)
+  } else {
+    // 发送失败，更新状态
+    const item = dialogueStore.records.find(r => r.msg_id === tempMsgId)
+    if (item) {
+      item.is_sending = false
+      item.is_failed = true
+      item.is_temp = false
+    }
+    callBack(false)
+  }
 }
 
 // 发送图片消息
